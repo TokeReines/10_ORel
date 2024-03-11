@@ -520,17 +520,6 @@ docs = ["sphinx (>=3.5)", "sphinx (<7.2.5)", "jaraco.packaging (>=9.3)", "rst.li
 testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ruff (>=0.2.1)", "zipp (>=3.17)", "pytest-mypy"]
 
 [[package]]
-name = "iprogress"
-version = "0.4"
-description = "Text progress bar library for Python."
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-six = "*"
-
-[[package]]
 name = "ipykernel"
 version = "6.29.3"
 description = "IPython Kernel for Jupyter"
@@ -1613,6 +1602,14 @@ optional = false
 python-versions = ">=3.8"
 
 [[package]]
+name = "ruff"
+version = "0.3.2"
+description = "An extremely fast Python linter and code formatter, written in Rust."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[[package]]
 name = "seaborn"
 version = "0.13.2"
 description = "Statistical data visualization"
@@ -1933,7 +1930,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-ena
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "4cabb60e2c3b26cdfee9ddadb71c39c72e86200c0cddf92e2fc5f436caa0270b"
+content-hash = "08c1d1db1958df1e884b9e957582f1cdb0d32d75afd6f325981777ffc6242672"
 
 [metadata.files]
 anyio = []
@@ -1974,7 +1971,6 @@ httpx = []
 idna = []
 importlib-metadata = []
 importlib-resources = []
-iprogress = []
 ipykernel = []
 ipython = []
 ipywidgets = []
@@ -2054,6 +2050,7 @@ requests = []
 rfc3339-validator = []
 rfc3986-validator = []
 rpds-py = []
+ruff = []
 seaborn = []
 send2trash = []
 six = []
