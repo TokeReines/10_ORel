@@ -29,7 +29,8 @@ class riverswim():
         self.support = [[[] for _ in range(self.nA)] for _ in range(self.nS)]
         for s in range(nS):
             if s == 0:
-                self.P[s, 0, s] = 1
+                self.P[s, 0, s] = 0.95
+                self.P[s, 0, s+1] = 0.05
                 self.P[s, 1, s] = 0.6
                 self.P[s, 1, s + 1] = 0.4
                 self.support[s][0] += [0]
@@ -41,13 +42,13 @@ class riverswim():
                 self.support[s][0] += [s - 1]
                 self.support[s][1] += [s - 1, s]
             else:
-                self.P[s, 0, s - 1] = 1
+                self.P[s, 0, s - 1] = 0.95
+                self.P[s, 0, s + 1] = 0.05
                 self.P[s, 1, s] = 0.55
                 self.P[s, 1, s + 1] = 0.4
                 self.P[s, 1, s - 1] = 0.05
                 self.support[s][0] += [s - 1]
                 self.support[s][1] += [s - 1, s, s + 1]
-
         # We build the reward matrix R.
         self.R = np.zeros((nS, 2))
         self.R[0, 0] = 0.05
@@ -177,7 +178,7 @@ def PI(env, gamma=0.9):
 
 # A simple implementation of the MBIE algorithm from Strehl et al. 2007.
 class MBIE():
-    def __init__(self, nS, nA, gamma, epsilon=0.1, delta=0.05, m=100):
+    def __init__(self, nS, nA, gamma, epsilon=0.1, delta=0.05, m=1):
         self.nS = nS
         self.nA = nA
         self.gamma = gamma
