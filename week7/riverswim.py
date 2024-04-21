@@ -178,7 +178,7 @@ def PI(env, gamma=0.9):
 
 # A simple implementation of the MBIE algorithm from Strehl et al. 2007.
 class MBIE():
-    def __init__(self, nS, nA, gamma, epsilon=0.1, delta=0.05, m=1):
+    def __init__(self, nS, nA, gamma, epsilon=0.1, delta=0.05, m=1, support=None):
         self.nS = nS
         self.nA = nA
         self.gamma = gamma
@@ -188,6 +188,7 @@ class MBIE():
         # As used in proof of lemma 5 in the original paper.
         self.delta = delta / (2 * nS * nA * m)
         self.s = None
+        self.support = support
         
         # The "counter" variables:
         # Number of occurences of (s, a).
@@ -242,21 +243,40 @@ class MBIE():
     # Computing the maximum proba in the Extended Value Iteration for given state s and action a.
     # From UCRL2 jacksh et al. 2010.
 
-    def max_proba(self, sorted_indices, s, a):
-        min1 = min(
-            [1, self.hatP[s, a, sorted_indices[-1]] + (self.confP[s, a] / 2)])
-        max_p = np.zeros(self.nS)
+    def max_proba(self, sorted_indices, s, a, support=None):
+        min1 = min([1, self.hatP[s, a, sorted_indices[-1]] + (self.confP[s, a] / 2)])
         if min1 == 1:
+            max_p = np.zeros(self.nS)
             max_p[sorted_indices[-1]] = 1
         else:
             max_p = cp.deepcopy(self.hatP[s, a])
             max_p[sorted_indices[-1]] += self.confP[s, a] / 2
             l = 0
             while sum(max_p) > 1:
-                max_p[sorted_indices[l]] = max(
-                    [0, 1 - sum(max_p) + max_p[sorted_indices[l]]])
+                max_p[sorted_indices[l]] = max([0, 1 - sum(max_p) + max_p[sorted_indices[l]]])
                 l += 1
+            
         return max_p
+    
+    def max_proba2(self, sorted_indices, s, a, support=None):
+        max_p = cp.deepcopy(self.hatP[s, a])
+
+        if support is not None:
+            max_p[:] = 0
+            # Apply confidence interval adjustments only within the support set.
+            for ss in support[s][a]:
+                max_p[ss] = self.hatP[s, a][ss] + (self.confP[s, a] / 2)
+        else:
+            # If no support is defined, perform the adjustment on the most promising state.
+            max_p[sorted_indices[-1]] += (self.confP[s, a] / 2)
+
+        # Normalize the probabilities to ensure they sum to 1.
+        total_prob = np.sum(max_p)
+        if total_prob > 0:
+            max_p /= total_prob
+
+        return max_p
+    
 
     # The Extended Value Iteration, perform an optimisitc VI over a set of MDP.
 
@@ -278,7 +298,10 @@ class MBIE():
             niter += 1
             for s in range(self.nS):
                 for a in range(self.nA):
-                    maxp = self.max_proba(sorted_indices, s, a)
+                    if self.support:
+                        maxp = self.max_proba2(sorted_indices, s, a, self.support)
+                    else:
+                        maxp = self.max_proba(sorted_indices, s, a)
                     temp = self.hatR[s, a] + self.confR[s, a] + \
                         gamma * sum([V * p for (V, p) in zip(V0, maxp)])
                     if (a == 0) or (temp > V1[s]):
@@ -307,9 +330,9 @@ class MBIE():
             for a in range(self.nA):
                 self.hatR[s, a] = self.Rsa[s, a] / max((1, self.Nsa[s, a]))
                 for ss in range(self.nS):
-                    if support is not None and ss not in support[s][a]:  # Ignore if ss is not in the support set
-                        self.hatP[s, a, ss] = 0  
-                        continue
+                    # if support is not None and ss not in support[s][a]:  # Ignore if ss is not in the support set
+                    #     self.hatP[s, a, ss] = 0  
+                    #     continue
                     
                     self.hatP[s, a, ss] = self.Nsas[s, a, ss] / max((1, self.Nsa[s, a]))                                         
 
